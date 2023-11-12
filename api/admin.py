@@ -19,12 +19,14 @@ tela_model = admin_ns.model('Tela', {
 })
 
 TELAS = [{"id": 1, "nome": "Busca de Im\u00f3veis", "descricao": "Tela para busca de im\u00f3veis", "caminho": "/busca"}, 
-         {"id": 2, "nome": "Gerenciamento de Im\u00f3veis", "descricao": "Tela para gerenciamento de im\u00f3veis", "caminho": "/imoveis"}, 
-         {"id": 3, "nome": "Gerenciamento de Usuarios", "descricao": "Tela para gerenciamento de usu\u00e1rios", "caminho": "/usuarios"}, 
-         {"nome": "Gerenciamento de perfis", "descricao": "Tela para gerenciamento de perfis", "caminho": "/perfis", "id": 4}, 
-         {"nome": "Gerenciamento de telas", "descricao": "Tela para gerenciamento de telas", "caminho": "/telas", "id": 5},
+         {"id": 2, "nome": "Gerenciar de Im\u00f3veis", "descricao": "Tela para gerenciamento de im\u00f3veis", "caminho": "/imoveis"}, 
+         {"id": 3, "nome": "Gerenciar Usuarios", "descricao": "Tela para gerenciamento de usu\u00e1rios", "caminho": "/usuarios"}, 
+         {"nome": "Gerenciar perfis", "descricao": "Tela para gerenciamento de perfis", "caminho": "/perfis", "id": 4}, 
+         {"nome": "Gerenciar telas", "descricao": "Tela para gerenciamento de telas", "caminho": "/telas", "id": 5},
          {"nome": "Mensagens", "descricao": "Tela para gerenciamento de mensagens", "caminho": "/mensagens", "id": 6},
          {"nome": "Estatisticas", "descricao": "Tela para acompanhamento de estatisticas", "caminho": "/estatisticas", "id": 7},
+         {"nome": "Gerenciar tipos de imoveis", "descricao": "Tela para gerenciamento de tipos de imoveis", "caminho": "/tiposimoveis", "id": 8},
+
          ]
 
 
@@ -32,7 +34,7 @@ TELAS = [{"id": 1, "nome": "Busca de Im\u00f3veis", "descricao": "Tela para busc
 
 
 PERFIS = [{"id": 1, "nome": "Cliente", "descricao": "Perfil de usu\u00e1rio b\u00e1sico logado", "telas": [1]}, 
-          {"id": 2, "nome": "Administrador", "descricao": "Perfil com acesso total ao sistema", "telas": [1, 2, 3, 4, 5,6,7]}, 
+          {"id": 2, "nome": "Administrador", "descricao": "Perfil com acesso total ao sistema", "telas": [1, 2, 3, 4, 5,6,7,8]}, 
           {"id": 3, "nome": "Corretor", "descricao": "Perfil com acesso limitado ao gerenciamento de im\u00f3veis", "telas": [1, 2,6]}
           ]
 
