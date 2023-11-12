@@ -18,8 +18,8 @@ tela_model = admin_ns.model('Tela', {
     'caminho': fields.String(required=True, description='Código da tela na aplicação'),
 })
 
-TELAS = [{"id": 1, "nome": "Busca de Im\u00f3veis", "descricao": "Tela para busca de im\u00f3veis", "caminho": "/busca"}, 
-         {"id": 2, "nome": "Gerenciar de Im\u00f3veis", "descricao": "Tela para gerenciamento de im\u00f3veis", "caminho": "/imoveis"}, 
+TELAS = [{"id": 1, "nome": "Busca de Imoveis", "descricao": "Tela para busca de im\u00f3veis", "caminho": "/busca"}, 
+         {"id": 2, "nome": "Gerenciar de Imoveis", "descricao": "Tela para gerenciamento de im\u00f3veis", "caminho": "/imoveis"}, 
          {"id": 3, "nome": "Gerenciar Usuarios", "descricao": "Tela para gerenciamento de usu\u00e1rios", "caminho": "/usuarios"}, 
          {"nome": "Gerenciar perfis", "descricao": "Tela para gerenciamento de perfis", "caminho": "/perfis", "id": 4}, 
          {"nome": "Gerenciar telas", "descricao": "Tela para gerenciamento de telas", "caminho": "/telas", "id": 5},
