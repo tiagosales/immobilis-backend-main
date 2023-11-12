@@ -18,11 +18,6 @@ tela_model = admin_ns.model('Tela', {
     'caminho': fields.String(required=True, description='Código da tela na aplicação'),
 })
 
-tipo_imovel_model = admin_ns.model('TipoImovel', {
-    'id': fields.Integer(readOnly=True, description='Identificador único do tipo de imóvel'),
-    'nome': fields.String(required=True, description='Nome do tipo de imóvel'),
-})
-
 TELAS = [{"id": 1, "nome": "Busca de Im\u00f3veis", "descricao": "Tela para busca de im\u00f3veis", "caminho": "/busca"}, 
          {"id": 2, "nome": "Gerenciamento de Im\u00f3veis", "descricao": "Tela para gerenciamento de im\u00f3veis", "caminho": "/imoveis"}, 
          {"id": 3, "nome": "Gerenciamento de Usuarios", "descricao": "Tela para gerenciamento de usu\u00e1rios", "caminho": "/usuarios"}, 
@@ -42,39 +37,7 @@ PERFIS = [{"id": 1, "nome": "Cliente", "descricao": "Perfil de usu\u00e1rio b\u0
           ]
 
 
-RELATORIOS = [
-    {
-        "nome": "Relatório de Vendas",
-        "descricao": "Um relatório mostrando as vendas de imóveis no último mês.",
-        "dados": [
-            {"data": "2023-01-01", "acessos": 10},
-            {"data": "2023-01-02", "acessos": 15},
-            {"data": "2023-01-03", "acessos": 12},
-        ],
-    },
-    {
-        "nome": "Relatório de Usuários",
-        "descricao": "Um relatório mostrando os usuários ativos no último mês.",
-        "dados": [
-            {"data": "2023-01-01", "usuarios": 500},
-            {"data": "2023-01-02", "usuarios": 510},
-            {"data": "2023-01-03", "usuarios": 520},
-        ],
-    }
-]
 
-
-
-TIPOS_IMOVEIS = [
-    {
-        "id": 1,
-        "nome": "Casa",
-    },
-    {
-        "id": 2,
-        "nome": "Apartamento",
-    }
-]
 
 @admin_ns.route('/perfis')
 class AdminPerfilLista(Resource):
@@ -195,75 +158,5 @@ class AdminTela(Resource):
 
 
 
-@admin_ns.route('/tipos-imoveis')
-class AdminTipoImovelLista(Resource):
-    @admin_ns.doc('admin_listar_tipos_imoveis')
-    def get(self):
-        '''Listar todos os tipos de imóveis (para administradores)'''
-        return TIPOS_IMOVEIS
-
-    @admin_ns.doc('admin_criar_tipo_imovel')
-    @admin_ns.expect(tipo_imovel_model)
-    def post(self):
-        '''Criar um novo tipo de imóvel (para administradores)'''
-        novo_tipo_imovel = request.json
-        novo_tipo_imovel['id'] = len(TIPOS_IMOVEIS) + 1
-        TIPOS_IMOVEIS.append(novo_tipo_imovel)
-        return novo_tipo_imovel, 201
-
-@admin_ns.route('/tipos-imoveis/<int:id>')
-@admin_ns.response(404, 'Tipo de imóvel não encontrado')
-@admin_ns.param('id', 'O identificador do tipo de imóvel')
-class AdminTipoImovel(Resource):
-    @admin_ns.doc('admin_obter_tipo_imovel')
-    def get(self, id):
-        '''Obter um tipo de imóvel pelo identificador (para administradores)'''
-        for tipo_imovel in TIPOS_IMOVEIS:
-            if tipo_imovel['id'] == id:
-                return tipo_imovel
-        admin_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
-
-    @admin_ns.doc('admin_atualizar_tipo_imovel')
-    @admin_ns.expect(tipo_imovel_model)
-    def put(self, id):
-        '''Atualizar um tipo de imóvel pelo id (para administradores)'''
-        tipo_imovel_to_update = None
-        for tipo_imovel in TIPOS_IMOVEIS:
-            if tipo_imovel['id'] == id:
-                tipo_imovel_to_update = tipo_imovel
-                break
-        if not tipo_imovel_to_update:
-            admin_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
-        tipo_imovel_data = request.json
-        tipo_imovel_to_update['nome'] = tipo_imovel_data['nome']
-        return tipo_imovel_to_update
-
-    @admin_ns.doc('admin_excluir_tipo_imovel')
-    def delete(self, id):
-        '''Excluir um tipo de imóvel pelo id (para administradores)'''
-        tipo_imovel_to_delete = None
-        for tipo_imovel in TIPOS_IMOVEIS:
-            if tipo_imovel['id'] == id:
-                tipo_imovel_to_delete = tipo_imovel
-                break
-        if not tipo_imovel_to_delete:
-            admin_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
-        TIPOS_IMOVEIS.remove(tipo_imovel_to_delete)
-        return '', 204
-    # app/admin.py
-# ...
-
-relatorio_model = admin_ns.model('Relatorio', {
-    'nome': fields.String(required=True, description='Nome do relatório'),
-    'descricao': fields.String(required=True, description='Descrição do relatório'),
-    'dados': fields.List(fields.Raw, required=True, description='Dados do relatório'),
-})
 
 
-
-@admin_ns.route('/relatorios')
-class AdminRelatorioLista(Resource):
-    @admin_ns.doc('admin_listar_relatorios')
-    def get(self):
-        '''Listar todos os relatórios (para administradores)'''
-        return RELATORIOS

@@ -24,6 +24,12 @@ imovel_model = imovel_ns.model('Imovel', {
     'id_usuario': fields.Integer(required=True, description='Identificador usuario que cadastrou o imovel'),
 })
 
+tipo_imovel_model = imovel_ns.model('TipoImovel', {
+    'id': fields.Integer(readOnly=True, description='Identificador único do tipo de imóvel'),
+    'nome': fields.String(required=True, description='Nome do tipo de imóvel'),
+})
+
+
 comentario_model = imovel_ns.model('Comentario',{
      'id': fields.Integer(readOnly=True, description='Identificador único do comentário'),
      'id_usuario': fields.Integer(required=True, description='Identificador do usuário'),
@@ -77,6 +83,17 @@ IMOVEIS = [
 	    "foto": "https://via.placeholder.com/150",
         "modalidade": "venda",
         "id_usuario": 2,
+    }
+]
+
+TIPOS_IMOVEIS = [
+    {
+        "id": 1,
+        "nome": "Casa",
+    },
+    {
+        "id": 2,
+        "nome": "Apartamento",
     }
 ]
 
@@ -345,4 +362,60 @@ class FotosImovel(Resource):
         if not foto_para_apagar:
             imovel_ns.abort(404, f"Foto {id_foto} não encontrada para o imovel {id}")
         FOTOSIMOVEL.remove(foto_para_apagar)
+        return '', 204
+    
+@imovel_ns.route('/tipos-imoveis')
+class AdminTipoImovelLista(Resource):
+    @imovel_ns.doc('listar_tipos_imoveis')
+    def get(self):
+        '''Listar todos os tipos de imóveis'''
+        return TIPOS_IMOVEIS
+
+    @imovel_ns.doc('criar_tipo_imovel')
+    @imovel_ns.expect(tipo_imovel_model)
+    def post(self):
+        '''Criar um novo tipo de imóvel '''
+        novo_tipo_imovel = request.json
+        novo_tipo_imovel['id'] = len(TIPOS_IMOVEIS) + 1
+        TIPOS_IMOVEIS.append(novo_tipo_imovel)
+        return novo_tipo_imovel, 201
+
+@imovel_ns.route('/tipos-imoveis/<int:id>')
+@imovel_ns.response(404, 'Tipo de imóvel não encontrado')
+@imovel_ns.param('id', 'O identificador do tipo de imóvel')
+class TipoImovel(Resource):
+    @imovel_ns.doc('obter_tipo_imovel')
+    def get(self, id):
+        '''Obter um tipo de imóvel pelo identificador'''
+        for tipo_imovel in TIPOS_IMOVEIS:
+            if tipo_imovel['id'] == id:
+                return tipo_imovel
+        imovel_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
+
+    @imovel_ns.doc('atualizar_tipo_imovel')
+    @imovel_ns.expect(tipo_imovel_model)
+    def put(self, id):
+        '''Atualizar um tipo de imóvel pelo id '''
+        tipo_imovel_to_update = None
+        for tipo_imovel in TIPOS_IMOVEIS:
+            if tipo_imovel['id'] == id:
+                tipo_imovel_to_update = tipo_imovel
+                break
+        if not tipo_imovel_to_update:
+            imovel_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
+        tipo_imovel_data = request.json
+        tipo_imovel_to_update['nome'] = tipo_imovel_data['nome']
+        return tipo_imovel_to_update
+
+    @imovel_ns.doc('excluir_tipo_imovel')
+    def delete(self, id):
+        '''Excluir um tipo de imóvel pelo id'''
+        tipo_imovel_to_delete = None
+        for tipo_imovel in TIPOS_IMOVEIS:
+            if tipo_imovel['id'] == id:
+                tipo_imovel_to_delete = tipo_imovel
+                break
+        if not tipo_imovel_to_delete:
+            imovel_ns.abort(404, f"Tipo de imóvel {id} não encontrado")
+        TIPOS_IMOVEIS.remove(tipo_imovel_to_delete)
         return '', 204
