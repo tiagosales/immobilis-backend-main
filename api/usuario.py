@@ -1,6 +1,6 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from api.admin import PERFIS,TELAS
+from models.admin import Perfil, Tela
 from .utils import perfil_requerido
 from datetime import datetime
 
@@ -188,6 +188,8 @@ class TelasPerfil(Resource):
     @usuario_ns.doc('listar_perfil_telas')
     def get(self, id):
         '''Listar telas do usuário'''
+        PERFIS = Perfil.query.all()
+        TELAS = Tela.query.all()
         telasperfil_tmp = []
         if id == "0":
             telasperfil_tmp.append({'nome': 'Buscar Imóveis', "caminho": '/busca'})
@@ -196,10 +198,11 @@ class TelasPerfil(Resource):
                 if usuario['id'] == id:
                     id_perfil = usuario['id_perfil']
             for perfil in PERFIS:
-                if perfil['id'] == id_perfil:
-                    for perfiltela in perfil['telas']:
+                if perfil.id == id_perfil: 
+                    telas = perfil.telas.strip('][').split(', ')
+                    for perfiltela in telas:
                          for tela in TELAS:
-                            if perfiltela == tela['id']:
-                                telasperfil_tmp.append({'nome': tela['nome'], "caminho": tela['caminho']})
-
+                            print(perfiltela,tela.id)
+                            if int(perfiltela) == int(tela.id):
+                                telasperfil_tmp.append({'nome': tela.nome, "caminho": tela.caminho})
         return telasperfil_tmp
