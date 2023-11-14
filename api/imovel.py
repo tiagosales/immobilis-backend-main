@@ -1,5 +1,5 @@
 from flask import request
-from api.usuario import FAVORITOS
+from api.usuario import Favorito
 from flask_restx import Namespace, Resource, fields
 
 imovel_ns = Namespace('imoveis', description='Operações de imóveis')
@@ -226,10 +226,11 @@ class ListaDeImoveis(Resource):
 
         if favoritos:
             if favoritos == 'true':
+                FAVORITOS=Favorito.query.all()
                 favoritos_usuario = []
                 for favorito in FAVORITOS:    
-                    if favorito['id_usuario'] == int(usuario):
-                        favoritos_usuario.append(favorito['id_imovel'])
+                    if int(favorito.id_usuario) == int(usuario):
+                        favoritos_usuario.append(favorito.id_imovel)
                 filtered_properties = [p for p in filtered_properties if p['id'] in favoritos_usuario ]
 
         return filtered_properties

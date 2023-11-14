@@ -26,7 +26,7 @@ class AdminPerfilLista(Resource):
     @admin_ns.doc('admin_listar_perfis')
     def get(self):
         '''Listar todos os perfis (para administradores)'''
-        perfis = Perfil.query.all()
+        perfis = Perfil.query.order_by(Perfil.id).all()
         return [{'id': perfil.id, 'nome': perfil.nome, 'descricao': perfil.descricao, 'telas': perfil.telas} for perfil in perfis]
 
     @admin_ns.doc('admin_criar_perfil')
@@ -84,7 +84,7 @@ class AdminTelaLista(Resource):
     @admin_ns.doc('admin_listar_telas')
     def get(self):
         '''Listar todas as telas (para administradores)'''
-        telas = Tela.query.all()
+        telas = Tela.query.order_by(Tela.id).all()
         return [{'id': tela.id, 'nome': tela.nome, 'descricao': tela.descricao, 'caminho': tela.caminho} for tela in telas]
 
     @admin_ns.doc('admin_criar_tela')

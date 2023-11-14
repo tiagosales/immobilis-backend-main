@@ -1,8 +1,10 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from models.admin import Perfil, Tela
+from models.usuario import Favorito,Usuario
 from .utils import perfil_requerido
 from datetime import datetime
+from app import db  # Certifique-se de importar o objeto db do seu aplicativo Flask
 
 # Cria um novo namespace do Flask-RESTX
 usuario_ns = Namespace('usuarios', description='Operações de usuário')
@@ -18,121 +20,88 @@ user_model = usuario_ns.model('Usuario', {
 
 })
 
-favorito_model = usuario_ns.model('Favorito',{
-     'id': fields.Integer(readOnly=True, description='Identificador único do favorito'),
-     'id_usuario': fields.Integer(required=True, description='Identificador do usuário'),
-     'id_imovel': fields.Integer(required=True, description='Identificador do imóvel'),
+favorito_model = usuario_ns.model('Favorito', {
+    'id': fields.Integer(readOnly=True, description='Identificador único do favorito'),
+    'id_usuario': fields.Integer(required=True, description='Identificador do usuário'),
+    'id_imovel': fields.Integer(required=True, description='Identificador do imóvel'),
 })
 
-#Dados 
-USUARIOS = [
-     {
-            "id": 1,
-            "nome": "João",
-            "email": "joao@teste.com",
-            "senha": "senhasegura123",
-            "id_perfil": 1,
-            "data_cadastro": '2023-10-13'
-        },
-        {
-            "id": 2,
-            "nome": "Maria",
-            "email": "maria@teste.com",
-            "senha": "outrasenhasegura456",
-            "id_perfil": 2,
-            "data_cadastro": '2023-09-13'
-        },
-        {
-            "id": 3,
-            "nome": "Pedro",
-            "email": "pedro@teste.com",
-            "senha": "outrasenhasegura789",
-            "id_perfil": 3,
-            "data_cadastro": '2023-08-13'
-        }
-]
+# Função para serializar objetos datetime
+def serialize_datetime(dt):
+    if dt is None:
+        return None
+    return dt.strftime('%Y-%m-%dT%H:%M:%S')
 
-FAVORITOS = [
-            {
-                "id": 1,
-                "id_usuario": 1,
-                "id_imovel": 1001,
-            },
-            {
-                "id": 2,
-                "id_usuario": 1,
-                "id_imovel": 1002,
-            },
-            {
-                "id": 3,
-                "id_usuario": 2,
-                "id_imovel": 1010,
-            },
-            {
-                "id": 4,
-                "id_usuario": 2,
-                "id_imovel": 1011,
-            },
-        ]
 
 @usuario_ns.route('')
 class ListaDeUsuarios(Resource):
-    #@usuario_ns.doc('listar_usuarios')
-    #@usuario_ns.doc(security='Bearer')
-    #@perfil_requerido(['2','3'])
     def get(self):
         '''Listar todos os usuários'''
-        return USUARIOS
+        usuarios = db.session.query(Usuario).all()  # Substitua "Usuario" pelo seu modelo de usuário
+        return [{'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email,
+                 'senha': usuario.senha, 'id_perfil': usuario.id_perfil,
+                 'data_cadastro': serialize_datetime(usuario.data_cadastro)} for usuario in usuarios]
 
     @usuario_ns.doc('criar_usuario')
     @usuario_ns.expect(user_model)
     def post(self):
         '''Criar um novo usuário'''
         novo_usuario = request.json
-        novo_usuario['id'] = len(USUARIOS) + 1
-        novo_usuario['data_cadastro'] = datetime.now().strftime('%Y-%m-%d')
-        USUARIOS.append(novo_usuario)
-        return novo_usuario, 201
+        novo_usuario['data_cadastro'] = serialize_datetime(datetime.now())
+        
+        usuario = Usuario(**novo_usuario)
+        db.session.add(usuario)
+        db.session.commit()
+        
+        return {'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email,
+                'senha': usuario.senha, 'id_perfil': usuario.id_perfil,
+                'data_cadastro': serialize_datetime(usuario.data_cadastro)}, 201
 
 @usuario_ns.route('/<int:id>')
 @usuario_ns.response(404, 'Usuário não encontrado')
 @usuario_ns.param('id', 'O identificador do usuário')
-class Usuario(Resource):
-    @usuario_ns.doc('obter_usuario')
+class UsuarioAPI(Resource):
     def get(self, id):
         '''Obter um usuário pelo identificador'''
-        for usuario in USUARIOS:
-            if usuario['id'] == id:
-                return usuario
-        usuario_ns.abort(404, f"Usuário {id} não encontrado")
+        usuario = db.session.query(Usuario).filter_by(id=id).first()  # Substitua "Usuario" pelo seu modelo de usuário
+        
+        if not usuario:
+            usuario_ns.abort(404, f"Usuário {id} não encontrado")
+        
+        return {'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email,
+                'senha': usuario.senha, 'id_perfil': usuario.id_perfil,
+                'data_cadastro': usuario.data_cadastro}
+
     @usuario_ns.doc('update_user')
     @usuario_ns.expect(user_model)
     def put(self, id):
         '''Atualize um usuário pelo id'''
-        user_to_update = None
-        for user in USUARIOS:
-            if user['id'] == id:
-                user_to_update = user
-                break
-        if not user_to_update:
-            usuario_ns.abort(404, f"Usuário {id} não encontrado")
         user_data = request.json
-        user_to_update['nome'] = user_data['nome']
-        user_to_update['email'] = user_data['email']
-        user_to_update['id_perfil'] = user_data['id_perfil']
-        return user_to_update
-    
+        usuario = db.session.query(Usuario).filter_by(id=id).first()  # Substitua "Usuario" pelo seu modelo de usuário
+        
+        if not usuario:
+            usuario_ns.abort(404, f"Usuário {id} não encontrado")
+        
+        usuario.nome = user_data['nome']
+        usuario.email = user_data['email']
+        usuario.id_perfil = user_data['id_perfil']
+        db.session.commit()
+        
+        return {'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email,
+                'senha': usuario.senha, 'id_perfil': usuario.id_perfil,
+                'data_cadastro': usuario.data_cadastro}
+
     @usuario_ns.doc('delete_user')
     def delete(self, id):
         '''Exclua um usuário pelo id'''
-        user_to_delete = None
-        for user in USUARIOS:
-            if user['id'] == id:
-                user_to_delete = user
-                break
-        if not user_to_delete:
+        usuario = db.session.query(Usuario).filter_by(id=id).first()  # Substitua "Usuario" pelo seu modelo de usuário
+        
+        if not usuario:
             usuario_ns.abort(404, f"Usuário {id} não encontrado")
-        USUARIOS.remove(user_to_delete)
+        
+        db.session.delete(usuario)
+        db.session.commit()
+        
         return '', 204
 
 @usuario_ns.route('/<int:id>/favoritos')
@@ -140,69 +109,56 @@ class Usuario(Resource):
 @usuario_ns.param('id', 'O identificador do usuário')
 
 class FavoritosUsuario(Resource):
-    @usuario_ns.doc('listar_favoritos_usuario')
     def get(self, id):
         '''Listar imóveis favoritos do usuário'''
-        favoritos_tmp = []
-        for favorito in FAVORITOS:
-            if favorito['id_usuario'] == id:
-                favoritos_tmp.append(favorito)
+        favoritos = db.session.query(Favorito).filter_by(id_usuario=id).all()  # Substitua "Favorito" pelo seu modelo de Favorito
+        
+        favoritos_tmp = [{'id': favorito.id, 'id_usuario': favorito.id_usuario, 'id_imovel': favorito.id_imovel} for favorito in favoritos]
         return favoritos_tmp
+
     @usuario_ns.doc('inserir_favorito_usuario')
     @usuario_ns.expect(favorito_model)
-    def post(self,id):
+    def post(self, id):
         '''Criar/Favoritar imóvel'''
         novo_favorito = request.json
-        print(novo_favorito)
-        for favorito in FAVORITOS:
-            if id == favorito['id_usuario'] and novo_favorito['id_imovel'] == favorito['id_imovel']:
-                return novo_favorito, 201
-        novo_favorito['id'] = len(FAVORITOS) + 1
-        novo_favorito['id_usuario'] = id
-        FAVORITOS.append(novo_favorito)
-        return novo_favorito, 201
+        favorito = Favorito(**novo_favorito)  # Substitua "Favorito" pelo seu modelo de Favorito
+        db.session.add(favorito)
+        db.session.commit()
+        
+        return {'id': favorito.id, 'id_usuario': favorito.id_usuario, 'id_imovel': favorito.id_imovel}, 201
     
 @usuario_ns.route('/<int:id>/favoritos/<int:id_imovel>')
 @usuario_ns.response(404, 'Usuário não encontrado')
 @usuario_ns.param('id', 'O identificador do usuário')
 @usuario_ns.param('id_imovel', 'O identificador do imovel')
 
-class FavoritosUsuario(Resource):
-    @usuario_ns.doc('apagar_favorito_usuario')
+class FavoritoUsuario(Resource):
     def delete(self, id, id_imovel):
         '''Apagar favorito'''
-        apagar_favorito = None
-        for favorito in FAVORITOS:
-            if favorito['id_usuario'] == id and favorito['id_imovel'] == id_imovel:
-                apagar_favorito = favorito
-                break
-        if not apagar_favorito:
-            usuario_ns.abort(404, f"Imovel favorito {id_imovel} não encontrado para o usuario {id}")
-        FAVORITOS.remove(apagar_favorito)
+        favorito = db.session.query(Favorito).filter_by(id_usuario=id, id_imovel=id_imovel).first()  # Substitua "Favorito" pelo seu modelo de Favorito
+        
+        if not favorito:
+            usuario_ns.abort(404, f"Imóvel favorito {id_imovel} não encontrado para o usuário {id}")
+        
+        db.session.delete(favorito)
+        db.session.commit()
+        
         return '', 204
     
 @usuario_ns.route('/<int:id>/telas-perfil')
 @usuario_ns.response(404, 'Usuário não encontrado')
 @usuario_ns.param('id', 'O identificador do usuário')
 class TelasPerfil(Resource):
-    @usuario_ns.doc('listar_perfil_telas')
     def get(self, id):
         '''Listar telas do usuário'''
-        PERFIS = Perfil.query.all()
-        TELAS = Tela.query.all()
-        telasperfil_tmp = []
-        if id == "0":
-            telasperfil_tmp.append({'nome': 'Buscar Imóveis', "caminho": '/busca'})
-        else:
-            for usuario in USUARIOS:
-                if usuario['id'] == id:
-                    id_perfil = usuario['id_perfil']
-            for perfil in PERFIS:
-                if perfil.id == id_perfil: 
-                    telas = perfil.telas.strip('][').split(', ')
-                    for perfiltela in telas:
-                         for tela in TELAS:
-                            print(perfiltela,tela.id)
-                            if int(perfiltela) == int(tela.id):
-                                telasperfil_tmp.append({'nome': tela.nome, "caminho": tela.caminho})
+        usuario = db.session.query(Usuario).filter_by(id=id).first()  # Substitua "Usuario" pelo seu modelo de usuário
+        
+        if not usuario:
+            usuario_ns.abort(404, f"Usuário {id} não encontrado")
+        
+        perfil = db.session.query(Perfil).order_by(Perfil.id).filter_by(id=usuario.id_perfil).first()  # Substitua "Perfil" pelo seu modelo de Perfil
+        perfiltelas = perfil.telas.strip('{}').split(',')  # Supondo que "telas" é uma relação de muitos para muitos
+        telas = db.session.query(Tela).order_by(Tela.id).filter(Tela.id.in_(perfiltelas))
+        telasperfil_tmp = [{'nome': tela.nome, 'caminho': tela.caminho} for tela in telas]
+        
         return telasperfil_tmp
