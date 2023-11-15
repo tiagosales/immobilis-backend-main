@@ -70,7 +70,7 @@ class UsuarioAPI(Resource):
         
         return {'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email,
                 'senha': usuario.senha, 'id_perfil': usuario.id_perfil,
-                'data_cadastro': usuario.data_cadastro}
+                'data_cadastro': serialize_datetime(usuario.data_cadastro)}
 
     @usuario_ns.doc('update_user')
     @usuario_ns.expect(user_model)
@@ -111,7 +111,7 @@ class UsuarioAPI(Resource):
 class FavoritosUsuario(Resource):
     def get(self, id):
         '''Listar imóveis favoritos do usuário'''
-        favoritos = db.session.query(Favorito).filter_by(id_usuario=id).all()  # Substitua "Favorito" pelo seu modelo de Favorito
+        favoritos = db.session.query(Favorito).filter_by(id_usuario=id).all()  
         
         favoritos_tmp = [{'id': favorito.id, 'id_usuario': favorito.id_usuario, 'id_imovel': favorito.id_imovel} for favorito in favoritos]
         return favoritos_tmp
@@ -121,7 +121,8 @@ class FavoritosUsuario(Resource):
     def post(self, id):
         '''Criar/Favoritar imóvel'''
         novo_favorito = request.json
-        favorito = Favorito(**novo_favorito)  # Substitua "Favorito" pelo seu modelo de Favorito
+        novo_favorito['id_usuario'] = id 
+        favorito = Favorito(**novo_favorito)  
         db.session.add(favorito)
         db.session.commit()
         

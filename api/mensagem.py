@@ -1,10 +1,9 @@
 from flask import request
-from .imovel import IMOVEIS
 from flask_restx import Namespace, Resource, fields
 from models.mensagem import Mensagem
 from config import db
 from datetime import datetime
-from api.imovel import IMOVEIS
+from models.imovel import Imovel
 
 
 
@@ -63,9 +62,11 @@ class Mensagens(Resource):
     def post(self):
         '''Criar uma nova mensagem'''
         nova_mensagem = mensagem_ns.payload
-        for imovel in IMOVEIS:
-            if nova_mensagem['id_imovel'] == imovel['id']:
-                nova_mensagem['id_usuario_destinatario'] = imovel['id_usuario']
+        id_imovel = nova_mensagem['id_imovel']
+        id_usuario_destinatario = db.session.query(Imovel.id_usuario).filter_by(id=id_imovel).scalar()
+        nova_mensagem['id_usuario_destinatario'] = id_usuario_destinatario
+        if id_usuario_destinatario is None:
+            mensagem_ns.abort(404, f"Imóvel {id_imovel} não encontrado")
         mensagem = Mensagem(
             texto=nova_mensagem['texto'],
             id_usuario_remetente=nova_mensagem['id_usuario_remetente'],
