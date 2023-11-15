@@ -11,4 +11,6 @@ class Usuario(db.Model):
 class Favorito(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_usuario = db.Column(db.Integer, nullable=False)
-    id_imovel = db.Column(db.Integer, nullable=False)
+    id_imovel = db.Column(db.Integer, db.ForeignKey('imovel.id', ondelete='CASCADE'), nullable=False)
+    imovel = db.relationship('Imovel', back_populates='favoritos')
+

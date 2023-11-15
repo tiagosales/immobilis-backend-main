@@ -1,17 +1,17 @@
 from config import db
 
 class Cidade(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nome = db.Column(db.String(255), nullable=False)
     id_estado = db.Column(db.Integer, nullable=False)
 
 class Estado(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nome = db.Column(db.String(255), nullable=False)
     sigla = db.Column(db.String(2), nullable=False)
 
 class Bairro(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nome = db.Column(db.String(255), nullable=False)
     id_cidade = db.Column(db.Integer, nullable=False)
 
