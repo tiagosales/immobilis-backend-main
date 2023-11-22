@@ -14,6 +14,8 @@ from datetime import datetime
 from flask_jwt_extended import (
     create_access_token
 )
+import os
+
 
 login_model = auth_ns.model('Login', {
     'email': fields.String(required=True, description='Nome de usuário'),
@@ -32,13 +34,25 @@ class Login(Resource):
         email = login_data.get('email')
         senha = login_data.get('senha')
 
-        usuario = db.session.query(Usuario).filter_by(email=email).first()
-        is_valid = bcrypt.check_password_hash(usuario.senha, senha) 
+        usuario = db.session.scalar(db.select(Usuario).where(Usuario.email == email))
+        print(usuario.email)
+        if not usuario is None:
+            is_valid = bcrypt.check_password_hash(usuario.senha, senha)
+            novo_usuario = False
+        else:
+            usuario = Usuario(email=email, nome=email.split('@')[0], senha=bcrypt.generate_password_hash(senha).decode('utf-8'),id_perfil=1,data_cadastro=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
+            db.session.add(usuario)
+            db.session.commit()
+            is_valid = True
+            novo_usuario = True
         if is_valid:
                 identity=str(usuario.id)+';'+str(usuario.id_perfil)
                 access_token = create_access_token(identity=identity)
-                return {"user_id": usuario.id, "perfil_id": usuario.id_perfil, "access_token": access_token , "message": "Login bem-sucedido"}, 200
-            
+                if novo_usuario:
+                    return {"user_id": usuario.id, "perfil_id": usuario.id_perfil, "access_token": access_token , "message": "Registro bem-sucedido"}, 201
+                else:
+                    return {"user_id": usuario.id, "perfil_id": usuario.id_perfil, "access_token": access_token , "message": "Login bem-sucedido"}, 200
+                    
         return {"message": "Login falhou, por favor verifique suas credenciais"}, 401
 
 
@@ -48,9 +62,9 @@ login = LoginManager(app)
 def load_user(id):
     return db.session.get(Usuario, int(id))
 
-url_busca = 'http://localhost:8000/busca'
-url_login = 'http://localhost:8000/loginpost'
-url_login_sistema = 'http://localhost:8000/login'
+url_busca = os.getenv('URL_FRONTEND')+'/busca'
+url_login = os.getenv('URL_FRONTEND')+'/loginpost'
+url_login_sistema = os.getenv('URL_FRONTEND')+'/login'
 
 @app.route('/logout')
 def logout():
@@ -92,7 +106,7 @@ def oauth2_authorize(provider):
 @app.route('/callback/<provider>')
 def oauth2_callback(provider):
     if not current_user.is_anonymous:
-        return redirect(url_login+'?access_token='+oauth2_idtoken+'&user_id='+str(user.id))
+        return redirect(url_login+'?access_token='+oauth2_idtoken+'&user_id='+str(usuario.id))
 
     provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_data is None:
@@ -141,14 +155,14 @@ def oauth2_callback(provider):
     email = provider_data['userinfo']['email'](response.json())
     # find or create the user in the database
 
-    user = db.session.scalar(db.select(Usuario).where(Usuario.email == email))
-    if user is None:
-        user = Usuario(email=email, nome=email.split('@')[0], senha=secrets.token_urlsafe(16),id_perfil=1,data_cadastro=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
-        db.session.add(user)
+    usuario = db.session.scalar(db.select(Usuario).where(Usuario.email == email))
+    if usuario is None:
+        usuario = Usuario(email=email, nome=email.split('@')[0], senha=secrets.token_urlsafe(16),id_perfil=1,data_cadastro=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
+        db.session.add(usuario)
         db.session.commit()
 
      # log the user in
-    login_user(user)
-    identity=str(user.id)+';'+str(user.id_perfil)
+    login_user(usuario)
+    identity=str(usuario.id)+';'+str(usuario.id_perfil)
     access_token = create_access_token(identity=identity)
-    return redirect(url_login+'?access_token='+access_token+'&id_token='+oauth2_idtoken+'&user_id='+str(user.id)+'&perfil_id='+str(user.id_perfil))
+    return redirect(url_login+'?access_token='+access_token+'&id_token='+oauth2_idtoken+'&user_id='+str(usuario.id)+'&perfil_id='+str(usuario.id_perfil))
