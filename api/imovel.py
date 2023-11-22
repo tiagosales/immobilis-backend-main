@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields
 from models.imovel import Imovel as ImovelModel, TipoImovel as TipoImovelModel, Comentario as ComentarioModel, FotosImovel as FotosImovelModel
 from config import db
 from datetime import datetime
+from .utils import perfil_requerido
 
 imovel_ns = Namespace('imoveis', description='Operações de imóveis')
 
@@ -186,6 +187,8 @@ class ListaDeImoveis(Resource):
 
     @imovel_ns.doc('criar_imovel')
     @imovel_ns.expect(imovel_model)
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def post(self):
         '''Criar um novo imóvel'''
         novo_imovel_data = request.json
@@ -245,6 +248,8 @@ class Imovel(Resource):
 
     @imovel_ns.doc('atualizar_imovel')
     @imovel_ns.expect(imovel_model)
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def put(self, id):
         '''Atualizar um imóvel pelo id'''
         imovel = ImovelModel.query.get(id)
@@ -278,6 +283,8 @@ class Imovel(Resource):
         }
 
     @imovel_ns.doc('excluir_imovel')
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def delete(self, id):
         '''Excluir um imóvel pelo id'''
         imovel = ImovelModel.query.get(id)
@@ -358,6 +365,8 @@ class FotosImovel(Resource):
 
     @imovel_ns.doc('inserir_fotos_imovel')
     @imovel_ns.expect(fotosimovel_model)
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def post(self, id):
         '''Adicionar fotos do imóvel'''
         nova_foto_data = request.json
@@ -379,6 +388,8 @@ class FotosImovel(Resource):
 @imovel_ns.param('id_foto', 'O identificador da foto')
 class FotosImovel(Resource):
     @imovel_ns.doc('apagar_foto_imovel')
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def delete(self, id, id_foto):
         '''Excluir uma foto pelo id'''
         foto = FotosImovelModel.query.filter_by(id_imovel=id, id=id_foto).first()
@@ -402,6 +413,8 @@ class AdminTipoImovelLista(Resource):
 
     @imovel_ns.doc('criar_tipo_imovel')
     @imovel_ns.expect(tipo_imovel_model)
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def post(self):
         '''Criar um novo tipo de imóvel '''
         novo_tipo_imovel_data = request.json
@@ -432,6 +445,8 @@ class TipoImovel(Resource):
 
     @imovel_ns.doc('atualizar_tipo_imovel')
     @imovel_ns.expect(tipo_imovel_model)
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def put(self, id):
         '''Atualizar um tipo de imóvel pelo id '''
         tipo_imovel = TipoImovelModel.query.get(id)
@@ -446,6 +461,8 @@ class TipoImovel(Resource):
         }
 
     @imovel_ns.doc('excluir_tipo_imovel')
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def delete(self, id):
         '''Excluir um tipo de imóvel pelo id'''
         tipo_imovel = TipoImovelModel.query.get(id)
@@ -460,6 +477,8 @@ class TipoImovel(Resource):
 @imovel_ns.param('id', 'O identificador do tipo de imóvel')
 class TipoImovel(Resource):
     @imovel_ns.doc('excluir_tipo_imovel')
+    @imovel_ns.doc(security='Bearer')
+    @perfil_requerido(['2','3'])
     def delete(self, id):
         '''Excluir um tipo de imóvel pelo id'''
         tipo_imovel = TipoImovelModel.query.get(id)

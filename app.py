@@ -1,4 +1,4 @@
-from config import app, db, migrate,api
+from config import app, db, migrate,api,bcrypt
 
 from api.usuario import usuario_ns
 from api.imovel import imovel_ns

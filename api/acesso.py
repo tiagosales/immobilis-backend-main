@@ -3,6 +3,8 @@ from flask_restx import Namespace, Resource, fields
 from models.acesso import Acesso
 from config import db
 from datetime import datetime
+from .utils import perfil_requerido
+
 
 # Função para serializar objetos datetime
 def serialize_datetime(dt):
@@ -23,6 +25,8 @@ acesso_model = acesso_ns.model('Acesso', {
 @acesso_ns.route('/')
 class TodosAcessos(Resource):
     @acesso_ns.doc('listar_acessos')
+    @acesso_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def get(self):
         '''Listar acessos'''
         acessos = Acesso.query.all()
@@ -33,6 +37,8 @@ class TodosAcessos(Resource):
     def post(self):
         '''Criar um novo registro de acesso'''
         novo_acesso = acesso_ns.payload
+        if 'login' in novo_acesso['caminho']:
+            return {}, 201
         acesso = Acesso(
             id_usuario=novo_acesso['id_usuario'],
             data_acesso=serialize_datetime(datetime.now()),

@@ -4,6 +4,7 @@ from flask import Flask, request
 from flask_restx import Namespace, Resource, fields
 from models.admin import Perfil, Tela
 from config import db
+from .utils import perfil_requerido
 
 admin_ns = Namespace('admin', description='Operações de administração')
 
@@ -24,6 +25,8 @@ tela_model = admin_ns.model('Tela', {
 @admin_ns.route('/perfis')
 class AdminPerfilLista(Resource):
     @admin_ns.doc('admin_listar_perfis')
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def get(self):
         '''Listar todos os perfis (para administradores)'''
         perfis = Perfil.query.order_by(Perfil.id).all()
@@ -31,6 +34,8 @@ class AdminPerfilLista(Resource):
 
     @admin_ns.doc('admin_criar_perfil')
     @admin_ns.expect(perfil_model)
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def post(self):
         '''Criar um novo perfil (para administradores)'''
         novo_perfil = request.json
@@ -53,6 +58,8 @@ class AdminPerfil(Resource):
 
     @admin_ns.doc('admin_atualizar_perfil')
     @admin_ns.expect(perfil_model)
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def put(self, id):
         '''Atualizar um perfil pelo id (para administradores)'''
         perfil = Perfil.query.get(id)
@@ -68,6 +75,8 @@ class AdminPerfil(Resource):
         return {'id': perfil.id, 'nome': perfil.nome, 'descricao': perfil.descricao, 'telas': perfil.telas}
 
     @admin_ns.doc('admin_excluir_perfil')
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def delete(self, id):
         '''Excluir um perfil pelo id (para administradores)'''
         perfil = Perfil.query.get(id)
@@ -89,6 +98,8 @@ class AdminTelaLista(Resource):
 
     @admin_ns.doc('admin_criar_tela')
     @admin_ns.expect(tela_model)
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def post(self):
         '''Criar uma nova tela (para administradores)'''
         nova_tela = request.json
@@ -111,6 +122,8 @@ class AdminTela(Resource):
 
     @admin_ns.doc('admin_atualizar_tela')
     @admin_ns.expect(tela_model)
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def put(self, id):
         '''Atualizar uma tela pelo id (para administradores)'''
         tela = Tela.query.get(id)
@@ -126,6 +139,8 @@ class AdminTela(Resource):
         return {'id': tela.id, 'nome': tela.nome, 'descricao': tela.descricao, 'caminho': tela.caminho}
 
     @admin_ns.doc('admin_excluir_tela')
+    @admin_ns.doc(security='Bearer')
+    @perfil_requerido(['2'])
     def delete(self, id):
         '''Excluir uma tela pelo id (para administradores)'''
         tela = Tela.query.get(id)
