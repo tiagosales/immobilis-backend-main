@@ -5,7 +5,7 @@ Projeto integrado da pós graduação de Desenv. Web Full Stack da PUC Minas<br>
      echo "SECRET_KEY=minhasecretkey<br>
      DATABASE_URL=postgresql://usuario:senha@hostBD/banco<br>
      GOOGLE_CLIENT_ID=OauthClientID<br>
-     GOOGLE_CLIENT_SECRET=authClientSecret<br>
+     GOOGLE_CLIENT_SECRET=OauthClientSecret<br>
      URL_FRONTEND=https://meu.endereco.de.frontend:porta" > .env<br>
   3. Crie um virtualenv com o comando:<br>
      $ python3 -m venv "nomeDoVenv"<br>
