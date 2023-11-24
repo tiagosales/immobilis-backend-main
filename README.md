@@ -1,7 +1,7 @@
 # immobilis-backend-main
 Projeto integrado da pós graduação de Desenv. Web Full Stack da PUC Minas<br>
 - Para iniciar a aplicação<br>
-  1. Crie o arquivo .env com as variáveis abaixo apontando para o endereço da API iniciada no repositorio immobilis-backend-main.<br>
+  1. Crie o arquivo .env com as variáveis abaixo, o endereço da variável URL_FRONTEND deve apontar para o endereço da API iniciada no repositorio immobilis-frontend-main.<br>
      echo "SECRET_KEY=minhasecretkey<br>
      DATABASE_URL=postgresql://usuario:senha@hostBD/banco<br>
      GOOGLE_CLIENT_ID=OauthClientID<br>
