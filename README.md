@@ -14,5 +14,9 @@ Projeto integrado da pós graduação de Desenv. Web Full Stack da PUC Minas<br>
        $ . ./venv/bin/activate<br>
   6. Instale os pacotes requeridos:<br>
      (venv)$ pip install -r requirements.txt<br>
+  7. Caso seja a primeira execução, precisa ser criado o modelo de banco de dados:<br>
+     (venv)$ flask db init<br>
+     (venv)$ flask db migrate<br>
+     (venv)$ flask db upgrade<br>
   7. Iniciar o Flask:<br>
      (venv)$ flask run<br>
