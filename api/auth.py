@@ -93,7 +93,7 @@ def oauth2_authorize(provider):
     qs = urlencode({
         'client_id': provider_data['client_id'],
         'redirect_uri': url_for('oauth2_callback', provider=provider,
-                                _external=True),
+                                _external=True,_scheme='https'),
         'response_type': 'code',
         'scope': ' '.join(provider_data['scopes']),
         'state': session['oauth2_state'],
