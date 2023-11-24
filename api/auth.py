@@ -65,6 +65,7 @@ def load_user(id):
 url_busca = os.getenv('URL_FRONTEND')+'/busca'
 url_login = os.getenv('URL_FRONTEND')+'/loginpost'
 url_login_sistema = os.getenv('URL_FRONTEND')+'/login'
+url_logout = os.getenv('URL_FRONTEND')+'/logout'
 
 @app.route('/logout')
 def logout():
@@ -80,7 +81,7 @@ def load_user(id):
 def oauth2_authorize(provider):
     if not current_user.is_anonymous:
         logout_user()
-        return redirect(url_for('logout'))
+        return redirect(url_logout)
 
     provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_data is None:
@@ -135,7 +136,7 @@ def oauth2_callback(provider):
         'code': request.args['code'],
         'grant_type': 'authorization_code',
         'redirect_uri': url_for('oauth2_callback', provider=provider,
-                                _external=True),
+                                _external=True,_scheme='https'),
     }, headers={'Accept': 'application/json'})
     if response.status_code != 200:
         abort(401)
